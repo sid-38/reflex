@@ -16,7 +16,9 @@ from reflex_cli.utils import dependency
 from reflex import constants
 from reflex.config import get_config
 from reflex.custom_components.custom_components import custom_components_cli
-from reflex.utils import console, telemetry
+from reflex.utils import console, telemetry, exec
+from reflex import global_data
+
 
 # Disable typer+rich integration for help panels
 typer.core.rich = False  # type: ignore
@@ -234,7 +236,8 @@ def _run(
         # In dev mode, run the backend on the main thread.
         if backend and env == constants.Env.DEV:
             backend_cmd(backend_host, int(backend_port))
-
+        print("Trying to kill frontend ", global_data.frontend_process.pid)
+        exec.kill(global_data.frontend_process.pid)
 
 @cli.command()
 def run(

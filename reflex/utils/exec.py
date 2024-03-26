@@ -10,13 +10,17 @@ import re
 import sys
 from pathlib import Path
 from urllib.parse import urljoin
-
+import subprocess
+import atexit
+import signal
 import psutil
 
 from reflex import constants
 from reflex.config import get_config
 from reflex.utils import console, path_ops
 from reflex.utils.watch import AssetFolderWatch
+
+from reflex import global_data
 
 
 def start_watching_assets_folder(root):
@@ -82,8 +86,12 @@ def run_process_and_launch_url(run_command: list[str]):
     while True:
         if process is None:
             process = processes.new_process(
-                run_command, cwd=constants.Dirs.WEB, shell=constants.IS_WINDOWS
+                run_command, cwd=constants.Dirs.WEB, shell=constants.IS_WINDOWS,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
             )
+
+            global_data.frontend_process = process
+
         if process.stdout:
             for line in processes.stream_logs("Starting frontend", process):
                 match = re.search(constants.Next.FRONTEND_LISTENING_REGEX, line)
@@ -125,6 +133,7 @@ def run_frontend(root: Path, port: str):
     console.rule("[bold green]App Running")
     os.environ["PORT"] = str(get_config().frontend_port if port is None else port)
     run_process_and_launch_url([prerequisites.get_package_manager(), "run", "dev"])  # type: ignore
+    console.rule("Run frontend function ends")
 
 
 def run_frontend_prod(root: Path, port: str):
@@ -176,7 +185,6 @@ def run_backend(
         reload=True,
         reload_dirs=[config.app_name],
     )
-
 
 def run_backend_prod(
     host: str,

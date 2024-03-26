@@ -84,7 +84,6 @@ from reflex.utils.imports import ImportVar
 ComponentCallable = Callable[[], Component]
 Reducer = Callable[[Event], Coroutine[Any, Any, StateUpdate]]
 
-
 def default_overlay_component() -> Component:
     """Default overlay_component attribute for App.
 
@@ -177,7 +176,7 @@ class App(Base):
             )
         super().__init__(*args, **kwargs)
         base_state_subclasses = BaseState.__subclasses__()
-
+        # print("PID is", os.getpid())
         # Special case to allow test cases have multiple subclasses of rx.BaseState.
         if not is_testing_env():
             # Only one Base State class is allowed.
